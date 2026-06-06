@@ -15,6 +15,7 @@ const { queryOne, queryAll, transaction } = require('../config/database');
 const { NotFoundError, BadRequestError } = require('../utils/errors');
 const { generateExperienceId } = require('../utils/id');
 const { embedExperience, generateEmbedding, isEmbeddingAvailable } = require('../utils/embedding');
+const { VALID_VISIBILITIES } = require('../utils/validation');
 
 const router = Router();
 
@@ -55,6 +56,14 @@ router.post('/', requireAuth, experienceLimiter, asyncHandler(async (req, res) =
 
   if (!title) {
     throw new BadRequestError('title is required');
+  }
+
+  if (!VALID_VISIBILITIES.includes(visibility)) {
+    throw new BadRequestError(
+      `visibility must be one of: ${VALID_VISIBILITIES.join(', ')}`,
+      'INVALID_VISIBILITY',
+      `Got "${visibility}". Use "public" unless your org has a private FleetSeek deployment.`
+    );
   }
 
   const id = generateExperienceId();

@@ -158,5 +158,81 @@ describe('Config', () => {
   });
 });
 
+describe('Database Error Mapping', () => {
+  // Regression: customer experience_post with visibility="team" hit the
+  // CHECK constraint and surfaced as a generic 500 (2026-06-05).
+  // pg errors carry a string `code` (SQLSTATE) and `constraint` name.
+  const { mapDatabaseError } = require('../src/middleware/errorHandler');
+
+  function pgError(code, extra = {}) {
+    const err = new Error('db error');
+    err.code = code;
+    return Object.assign(err, extra);
+  }
+
+  test('check_violation (23514) maps to 400 and names the constraint', () => {
+    const mapped = mapDatabaseError(
+      pgError('23514', { constraint: 'experiences_visibility_check' })
+    );
+    assert(mapped, 'Should map to an ApiError');
+    assertEqual(mapped.statusCode, 400);
+    assert(mapped.message.includes('experiences_visibility_check'),
+      'Message should include the violated constraint name');
+  });
+
+  test('unique_violation (23505) maps to 409', () => {
+    const mapped = mapDatabaseError(pgError('23505', { constraint: 'agents_name_key' }));
+    assert(mapped, 'Should map to an ApiError');
+    assertEqual(mapped.statusCode, 409);
+  });
+
+  test('not_null_violation (23502) maps to 400', () => {
+    const mapped = mapDatabaseError(pgError('23502', { column: 'robot_id' }));
+    assert(mapped, 'Should map to an ApiError');
+    assertEqual(mapped.statusCode, 400);
+  });
+
+  test('invalid_text_representation (22P02) maps to 400', () => {
+    const mapped = mapDatabaseError(pgError('22P02'));
+    assert(mapped, 'Should map to an ApiError');
+    assertEqual(mapped.statusCode, 400);
+  });
+
+  test('foreign_key_violation (23503) maps to 400', () => {
+    const mapped = mapDatabaseError(pgError('23503', { constraint: 'experience_applications_experience_id_fkey' }));
+    assert(mapped, 'Should map to an ApiError');
+    assertEqual(mapped.statusCode, 400);
+  });
+
+  test('unrelated pg code (e.g. connection failure 08006) returns null', () => {
+    assertEqual(mapDatabaseError(pgError('08006')), null);
+  });
+
+  test('non-pg error returns null', () => {
+    assertEqual(mapDatabaseError(new Error('plain error')), null);
+  });
+
+  test('mapped error does not leak raw SQL detail', () => {
+    const mapped = mapDatabaseError(
+      pgError('23514', {
+        constraint: 'experiences_visibility_check',
+        detail: 'Failing row contains (exp_123, secret_internal_value, ...)'
+      })
+    );
+    assert(!mapped.message.includes('secret_internal_value'),
+      'Raw row detail must not leak into the client-facing message');
+    assert(!(mapped.hint || '').includes('secret_internal_value'),
+      'Raw row detail must not leak into the hint');
+  });
+});
+
+describe('Experience Visibility Validation', () => {
+  const { VALID_VISIBILITIES } = require('../src/utils/validation');
+
+  test('allowed values match the DB CHECK constraint', () => {
+    assertEqual(JSON.stringify(VALID_VISIBILITIES), JSON.stringify(['public', 'org', 'private']));
+  });
+});
+
 // Run
 runTests();
