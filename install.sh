@@ -20,7 +20,7 @@ npm install -g "$CLI_PKG@latest"
 
 # 2. MCP server: warm npx cache so the first Claude Code launch is fast.
 echo "[2/4] Pre-fetching MCP server: $MCP_PKG"
-npx -y "$MCP_PKG@latest" --version > /dev/null 2>&1 || true
+npx -y "$MCP_PKG@latest" --version < /dev/null > /dev/null 2>&1 || true
 
 # 3. Sign in (X OAuth via local-callback) and register robot.
 echo "[3/4] Signing in to FleetSeek"
