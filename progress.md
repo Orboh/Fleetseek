@@ -27,6 +27,12 @@
   - Fix: `Array.isArray()` ガード + `typeof === 'string'` フォールバック表示
 - Commit: `147947a`, Vercel 本番デプロイ済み
 
+### orboh.jp → www.orboh.com URL 修正
+- **Status:** complete (2026-04-29)
+- `orboh.jp` が ECONNREFUSED で機能していないことを確認
+- `orboh-lp/src/i18n/translations.ts` の `robotInstruction` を2箇所修正
+- `orboh-lp` main にプッシュ → Vercel 自動デプロイ (commit: `06e2622`)
+
 ---
 
 ## Session: 2026-04-29 — MVP-ε: install.sh / skill.md / g1-debug-loop
