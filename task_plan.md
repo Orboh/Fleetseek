@@ -4,7 +4,8 @@
 Orboh 社内で Claude Code が DebugNote を自動検索・自動投稿するループを回せる状態にする (MVP-α)。
 
 ## Current Phase
-MVP-ε 実装中 (Phase 13-16) — install.sh / skill.md / g1-debug-loop / CLAUDE.md 統合
+**全 Phase 完了 (Phase 1–17)** — MVP-α〜MVP-ζ 本番稼働中 (2026-04-29)
+次のアクション候補: `packages/ai-reviewer/` DebugNote 自動レビュー Worker
 
 ## Phases
 
@@ -36,8 +37,8 @@ MVP-ε 実装中 (Phase 13-16) — install.sh / skill.md / g1-debug-loop / CLAUD
 - [x] `POST /api/robots/register` — ロボット登録 (fleetseek_id 発行)
 - [x] `POST /api/robots/:id/config_snapshot` — ConfigSnapshot 更新
 - [x] 後方互換: `/api/skills`, `/api/episodes` → 既存ルート維持
-- [ ] embedding 生成ロジック (症状テキスト → vector) ← MVP-β に延期
-- **Status:** complete (embedding は MVP-β)
+- [x] embedding 生成ロジック (症状テキスト → vector) ← Phase 9 で完了済み
+- **Status:** complete
 
 ### Phase 4: MCP サーバー実装 (packages/mcp-server/)
 - [x] `experience_search` ツール
@@ -126,7 +127,7 @@ MVP-ε 実装中 (Phase 13-16) — install.sh / skill.md / g1-debug-loop / CLAUD
 - **Status:** complete (2026-04-29)
 
 ### Phase 14: skill.md 更新 — 1行インストール + 知識貢献義務
-- [x] Step 3 を `curl -s https://orboh.jp/install | bash` の1行に置き換え
+- [x] Step 3 を `curl -s https://www.orboh.com/install.sh | bash` の1行に置き換え
 - [x] Step 6 「知識を貢献する（必須）」セクションを追加
   - DebugNote の投稿を Optional ではなく必須として記述
   - Claude Code で「このデバッグを FleetSeek にシェアして」と言う手順を記載
@@ -152,13 +153,13 @@ MVP-ε 実装中 (Phase 13-16) — install.sh / skill.md / g1-debug-loop / CLAUD
 - [x] Vercel 本番デプロイ済み (147947a 時点)
 - **Status:** complete (2026-04-29)
 
-## Key Questions
-1. 既存 `experiences` テーブルはすでに存在するか? (schema.sql 確認要)
-2. `robots` テーブルに L2/L3 フィールドがあるか?
-3. pgvector は現在の DB で有効化済みか?
-4. SDK は何言語? Python のみ?
-5. 既存 Skill データは何件あるか? (移行コスト見積もり)
-6. Unitree SDK で個体情報取得する API (U1) — CLI の robot register は stub で先行実装するか?
+## Key Questions (解決済み)
+1. ~~既存 `experiences` テーブルはすでに存在するか?~~ → なし、Phase 2 で作成
+2. ~~`robots` テーブルに L2/L3 フィールドがあるか?~~ → Phase 2 で追加
+3. ~~pgvector は有効化済みか?~~ → Phase 2 で有効化
+4. ~~SDK は何言語?~~ → Python + Node.js (packages/sdk/)
+5. ~~既存 Skill データは何件あるか?~~ → 17 件、Phase 2 で移行済み
+6. ~~CLI robot register — stub 実装か?~~ → stub 実装で先行完了 (Phase 6)
 
 ## Decisions Made
 | Decision | Rationale |
@@ -201,7 +202,8 @@ MVP-ε 実装中 (Phase 13-16) — install.sh / skill.md / g1-debug-loop / CLAUD
 | port 3001 EADDRINUSE | 1 | `fuser -k 3001/tcp` でクリア |
 
 ## Notes
-- 未確定事項 U1 (Unitree SDK 個体情報 API) は CLI Phase 6 着手時に解決
-- MVP-α には AI Reviewer Worker は含まない
-- `trust_score` の重み付け (U5) は MVP-β で調整
-- 既存コード確認結果は findings.md に記録する
+- AI Reviewer Worker (`packages/ai-reviewer/`) は未実装 — 必要になったら Phase 18 として追加
+- `trust_score` のベイズ重み付けは Phase 10 で調整済み
+- orboh.jp は未稼働、全 URL は `www.orboh.com` を使用 (2026-04-29 修正済み)
+- Railway API: `https://robonet-api-production.up.railway.app`
+- Vercel Web: `https://web-ebon-zeta-33.vercel.app`
